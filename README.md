@@ -23,3 +23,9 @@ node nodeService.js
 Windows + R
 services.msc
 procure por "nodeBasicServer"
+
+
+
+#### Para Excluir o servico do windows
+execute o cmd como Administrador e execute o seguinte comando:
+sc delete nodebasicserver.exe
