@@ -6,7 +6,7 @@ var reading = false,
     vid = 0x922,
     pid = 0x8003;
 
-    peso = 0;
+peso = 0;
 
     function startReading() {
         if (reading) return;
@@ -29,23 +29,22 @@ var reading = false,
                 d.close();
             });
 
-            return {'peso': peso};
+            return peso;
         } catch (err) {
             if (/cannot open device/.test(err.message)) {
-                return {'erro': 'Balança não encontrada!'}
+                return 'Dymo cannot be found';
+                console.log('Dymo M10 cannot be found');
             } else
-                return {'erro': err};
+                console.log(err);
+                return err;
         }
     }
 
 const express = require('express');
-const { response } = require('express');
 const server = express();
 
-server.get('/getPeso', (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+server.get('/teste', (req, res) => {
     return res.json(startReading())
-    
 });
 
 server.listen(3000, () =>{

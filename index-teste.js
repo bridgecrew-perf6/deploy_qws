@@ -9,27 +9,30 @@ var reading = false,
     peso = 0;
 
     function startReading() {
+        
         if (reading) return;
         try {
-            var d = new HID.HID(vid, pid);
+            //var d = new HID.HID(vid, pid);
     
-            console.log('Starting to read data from scale');
-            reading = true;
-    
-            d.on("data", function (data) {
-                var buf = new Buffer(data);
-                var grams = buf[4] + (256 * buf[5]);
-                peso = grams;
-                console.log(new Date().toISOString() + ': ' + grams + ' grams');
-            });
-    
-            d.on("error", function (error) {
-                console.log(error);
-                reading = false;
-                d.close();
-            });
+            setTimeout(() => {
+                peso = Math.floor(Math.random() * 256);;
+            }, 1000);
 
             return {'peso': peso};
+
+    
+            // d.on("data", function (data) {
+            //     var buf = new Buffer(data);
+            //     var grams = buf[4] + (256 * buf[5]);
+            //     console.log(new Date().toISOString() + ': ' + grams + ' grams');
+            //     return grams;
+            // });
+    
+            // d.on("error", function (error) {
+            //     console.log(error);
+            //     reading = false;
+            //     d.close();
+            // });
         } catch (err) {
             if (/cannot open device/.test(err.message)) {
                 return {'erro': 'Balança não encontrada!'}
