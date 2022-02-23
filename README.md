@@ -26,6 +26,18 @@ procure por "nodeBasicServer"
 
 
 
+### Para rodar a api de Fotos
+no arquivo read.js alterar a variavel pathImages (linha 14), para a pasta onde a camera do windows salva as imagens
+OBS.: Colocar barra dupla \\
+Exemplo: "C:\\Users\\Bruno Wan Der Maas\\Pictures\\Camera Roll"
+
+no arquivo serceFoto.js alterar o conteudo de script para o caminho do arquivo read.js
+
+após isso rodar o comando
+node serviceFoto.js
+
+
+
 #### Para Excluir o servico do windows
 execute o cmd como Administrador e execute o seguinte comando:
 sc delete nodebasicserver.exe
