@@ -14,7 +14,7 @@ var reading = false,
             var d = new HID.HID(vid, pid);
     
             console.log('Starting to read data from scale');
-            reading = true;
+            reading = false;
     
             d.on("data", function (data) {
                 var buf = new Buffer(data);
