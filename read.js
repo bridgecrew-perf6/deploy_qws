@@ -79,7 +79,7 @@ function sendPhoto(idVenda, base64) {
         'base64': base64
     };
     request({
-        url: "https://vendasphonecare.com/api/changeImgVenda",
+        url: "http://localhost:8000/api/changeImgVenda",
         method: "POST",
         json: true,   // <--Very important!!!
         body: myJSONObject
