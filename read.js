@@ -4,14 +4,23 @@ const fs = require('fs').promises;
 var request = require('request');
 const imageToBase64 = require('image-to-base64');
 
-var reading = false,
-    interval,
-    vid = 0x922,
-    pid = 0x8003;
-
 peso = 0;
 idVenda = null;
+idFecho = null;
+
+local = true;
+if(local){
+    rota = "http://127.0.0.1:8000/api/";
+}
+else{
+    rota = "https://vendasphonecare.com/api/";
+}
+
 var pathImages = "C:\\Users\\Bruno Wan Der Maas\\Pictures\\Camera Roll";
+var APIsendPhoto = rota + "changeImgVenda";
+var APIGetVendaLida = rota + "vendaLida";
+var APIGetFechoLido = rota + "fechoLido";
+var APISendPhotoFecho = rota + "sendPhotoFecho";
 
 async function listarArquivosDoDiretorio(diretorio, arquivos) {
 
@@ -31,7 +40,7 @@ async function listarArquivosDoDiretorio(diretorio, arquivos) {
 
 }
 
-async function clearPhotos(diretorio, idVenda) {
+async function clearPhotos(diretorio) {
 
     let listaDeArquivos = await fs.readdir(diretorio);
     for (let k in listaDeArquivos) {
@@ -42,8 +51,7 @@ async function clearPhotos(diretorio, idVenda) {
             fs.unlink(arquivo)
         }
         
-    }
-    idVenda = idVenda;
+    }    
 }
 
 async function test() {
@@ -57,9 +65,20 @@ async function test() {
             imageToBase64(arquivo) // Path to the image
                 .then(
                     (response) => {
-                        sendPhoto(idVenda, response);
-                        fs.unlink(arquivo)
-                        idVenda = null;
+                        if(idVenda){
+                            sendPhoto(idVenda, response);
+                            idVenda = null;
+                            clearPhotos(pathImages);
+                            intervalGetVenda = setInterval(() =>{
+                                getVendaLida();           
+                            }, 1000);
+                        }
+
+                        if(idFecho){
+                            sendPhotoFecho(idFecho, response);
+                            clearPhotos(pathImages);
+                        }
+                        
                     }
                 )
                 .catch(
@@ -79,7 +98,7 @@ function sendPhoto(idVenda, base64) {
         'base64': base64
     };
     request({
-        url: "http://localhost:8000/api/changeImgVenda",
+        url: APIsendPhoto,
         method: "POST",
         json: true,   // <--Very important!!!
         body: myJSONObject
@@ -88,15 +107,49 @@ function sendPhoto(idVenda, base64) {
     });
 }
 
-function listener(){
-    if(idVenda){
-        console.log('read function');
-    }
-    else{
-        console.log('nothing');
-    }
+function sendPhotoFecho(idFecho, base64) {
+    var myJSONObject = {
+        'idFecho': idFecho,
+        'base64': base64
+    };
+    request({
+        url: APISendPhotoFecho,
+        method: "POST",
+        json: true,   // <--Very important!!!
+        body: myJSONObject
+    }, function (error, response, body) {
+        console.log(response);
+    });
 }
 
+function getVendaLida() {
+    request({
+        url: APIGetVendaLida,
+        method: "GET",
+        json: true,   // <--Very important!!!        
+    }, function (error, response, body) {
+        if(body.vendaLida && body.vendaLida > 0){
+            console.log('find venda');
+            idVenda = body.vendaLida;
+            clearInterval(intervalGetVenda);            
+        }        
+    });
+}
+
+function getFechoLido() {
+    request({
+        url: APIGetFechoLido,
+        method: "GET",
+        json: true,   // <--Very important!!!        
+    }, function (error, response, body) {
+        if(body.fechoLido && body.fechoLido > 0){
+            idFecho = body.fechoLido;
+        }
+        else{
+            idFecho = null;
+        }
+    });
+}
 
 const express = require('express');
 const { response } = require('express');
@@ -113,12 +166,24 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
         }               
     }, 1000);
 
+    var ntervalFecho = setInterval(() =>{
+        if(idFecho){
+            console.log('execute fecho');
+            test();
+        }               
+    }, 1000);
 
-server.get('/readQR/:idVenda', jsonParser,(req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    clearPhotos(pathImages, req.body.idVenda);
-    idVenda = req.params.idVenda
-    return res.json('teste')
+    intervalGetVenda = setInterval(() =>{
+        getVendaLida();           
+    }, 1000);
+
+    intervalGetFechoLigo = setInterval(() =>{
+        getFechoLido();           
+    }, 1000);
+
+
+server.get('/teste', jsonParser,(req, res) => {
+    return res.json('teste ok')
 })
 
 server.listen(3000, () => {
